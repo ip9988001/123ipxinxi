@@ -29,25 +29,39 @@ jobs:
           curl -sSf -o ipsum.txt  https://raw.githubusercontent.com/stamparm/ipsum/master/ipsum.txt
           curl -sSf -o drop.txt   https://www.spamhaus.org/drop/drop.txt
           curl -sSf -o firehol_level1.netset https://raw.githubusercontent.com/firehol/blocklist-ipsets/master/firehol_level1.netset
+          curl -sSf -o ip2asn-v4.tsv.gz https://iptoasn.com/data/ip2asn-v4.tsv.gz && gunzip -f ip2asn-v4.tsv.gz
+          curl -sSf -o ip2asn-v6.tsv.gz https://iptoasn.com/data/ip2asn-v6.tsv.gz && gunzip -f ip2asn-v6.tsv.gz
+          curl -sSf -o nro-delegated-stats https://ftp.ripe.net/pub/stats/ripencc/nro-stats/latest/nro-delegated-stats
           ls -la *.txt *.json | awk '{print $5, $9}'
 
       - name: 编译
         run: |
           python3 scripts/build_ipseg.py
           python3 scripts/build_risk.py
-          ls -la data/
+          python3 scripts/build_asn.py
+          ls -la data/ | head -20
+          du -sh data data/asn
 
-      - name: 提交数据
+      - name: 发布数据到 data 分支（每次单 commit 覆盖，仓库不膨胀）
+        run: |
+          mkdir -p /tmp/pub && cp -r data/. /tmp/pub/
+          cd /tmp/pub
+          git init -q -b data
+          git config user.name  "123ip-data-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add -A
+          git commit -qm "data: $(date -u +%F)"
+          git remote add origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
+          git push -qf origin data
+          echo "已发布到 data 分支"
+
+      - name: 更新统计到 main（仅 stats 文件）
         run: |
           git config user.name  "123ip-data-bot"
           git config user.email "bot@users.noreply.github.com"
-          git add data
-          if git diff --cached --quiet; then
-            echo "无变化，跳过提交"
-          else
-            git commit -m "data: 每日更新 $(date -u +%F)"
-            git push
-          fi
+          git add -f data/stats.json data/asn_stats.json 2>/dev/null || true
+          if git diff --cached --quiet; then echo "统计无变化"; else
+            git commit -m "stats: $(date -u +%F)"; git push; fi
 
       - name: 同步到 Cloudflare KV
         env:

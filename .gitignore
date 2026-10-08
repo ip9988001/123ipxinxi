@@ -1,6 +1,9 @@
-# 下载到工作区的原始数据不提交，只提交编译产物
+# 下载的原始数据（Actions 工作区临时文件）
 *.txt
+*.tsv
 *.json
 !data/stats.json
-!package.json
+!data/asn_stats.json
 *.netset
+nro-delegated-stats
+*.b64
