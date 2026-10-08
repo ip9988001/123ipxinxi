@@ -1,0 +1,6 @@
+# 下载到工作区的原始数据不提交，只提交编译产物
+*.txt
+*.json
+!data/stats.json
+!package.json
+*.netset

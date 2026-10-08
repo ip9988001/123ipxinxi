@@ -1,0 +1,59 @@
+name: update-ip-data
+
+on:
+  schedule:
+    - cron: '23 4 * * *'      # 每日 UTC 04:23 = 北京 12:23
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 下载公开数据源
+        run: |
+          set -e
+          B=https://raw.githubusercontent.com/X4BNet/lists_vpn/main/output
+          curl -sSf -o dc4.txt    "$B/datacenter/ipv4.txt"
+          curl -sSf -o dc6.txt    "$B/datacenter/ipv6.txt"
+          curl -sSf -o vpn4.txt   "$B/vpn/ipv4.txt"
+          curl -sSf -o vpn6.txt   "$B/vpn/ipv6.txt"
+          curl -sSf -o cf4.txt    https://www.cloudflare.com/ips-v4
+          curl -sSf -o cf6.txt    https://www.cloudflare.com/ips-v6
+          curl -sSf -o aws.json   https://ip-ranges.amazonaws.com/ip-ranges.json
+          curl -sSf -o gcp.json   https://www.gstatic.com/ipranges/cloud.json
+          curl -sSf -o ipsum.txt  https://raw.githubusercontent.com/stamparm/ipsum/master/ipsum.txt
+          curl -sSf -o drop.txt   https://www.spamhaus.org/drop/drop.txt
+          curl -sSf -o firehol_level1.netset https://raw.githubusercontent.com/firehol/blocklist-ipsets/master/firehol_level1.netset
+          ls -la *.txt *.json | awk '{print $5, $9}'
+
+      - name: 编译
+        run: |
+          python3 scripts/build_ipseg.py
+          python3 scripts/build_risk.py
+          ls -la data/
+
+      - name: 提交数据
+        run: |
+          git config user.name  "123ip-data-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add data
+          if git diff --cached --quiet; then
+            echo "无变化，跳过提交"
+          else
+            git commit -m "data: 每日更新 $(date -u +%F)"
+            git push
+          fi
+
+      - name: 同步到 Cloudflare KV
+        env:
+          CF_EMAIL: ${{ secrets.CF_EMAIL }}
+          CF_KEY:   ${{ secrets.CF_API_KEY }}
+          CF_ACC:   ${{ secrets.CF_ACCOUNT_ID }}
+          KV_IPSEG: ${{ secrets.KV_IPSEG }}
+          KV_RISK:  ${{ secrets.KV_RISK }}
+        run: bash scripts/push_kv.sh
