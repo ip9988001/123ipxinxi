@@ -1,12 +1,12 @@
 {
  "shards": 256,
- "asn_total": 88456,
- "asn_with_segments": 88456,
+ "asn_total": 91800,
+ "asn_with_segments": 91800,
  "asn_no_meta": 0,
  "seg4": 459655,
  "seg6": 288390,
- "peeringdb_net": 10000,
- "nro_lines": 774946,
+ "peeringdb_net": 35846,
+ "nro_lines": 775066,
  "asn_not_in_nro": 11542,
  "shard_files": 256
 }
