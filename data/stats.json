@@ -1,29 +1,29 @@
 {
- "generated_at": "2026-11-15T12:05:35.279398Z",
+ "generated_at": "2026-11-16T12:58:30.260298Z",
  "sets": {
   "dc4.b64": {
-   "entries": 46273,
-   "bytes_b64": 308488
+   "entries": 46277,
+   "bytes_b64": 308516
   },
   "dc6.b64": {
-   "entries": 8519,
-   "bytes_b64": 102228
+   "entries": 8597,
+   "bytes_b64": 103164
   },
   "vpn4.b64": {
    "entries": 11105,
    "bytes_b64": 74036
   },
   "vpn6.b64": {
-   "entries": 700,
-   "bytes_b64": 8400
+   "entries": 701,
+   "bytes_b64": 8412
   },
   "risk_ips.b64": {
-   "entries": 136069,
-   "bytes_b64": 907128
+   "entries": 135040,
+   "bytes_b64": 900268
   },
   "risk_nets.b64": {
-   "entries": 4645,
-   "bytes_b64": 30968
+   "entries": 4644,
+   "bytes_b64": 30960
   }
  }
 }
